@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      0.1
+// @version      0.2
 // @description  pop up notification for new manifests to prevent user from missing important updates
 // @author       garbosz@
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
@@ -49,16 +49,18 @@ function getVolumeData(vol) {
   let output = [];
   const maxLength = 30;
   for (let i = 0; i < vol.length; i++) {
-    if (vol[i].textContent.trim().length > 0 && !processed.includes(vol[i])) {
+    if (vol[i].textContent.trim().length > 0 && !processed.includes(vol[i].firstChild.dataset.vrid)) {
       output.push([vol[i].firstChild.dataset.vrid, vol[i].textContent.trim()]);
-      processed.push(vol[i]);
+      processed.push(vol[i].firstChild.dataset.vrid);
         console.log(vol[i]);
       if (processed.length > maxLength) {
         processed.shift();
+          console.log(processed);
       }
       displayPopup(vol[i]);
+      break;
     }
-  }
+  }-
   return output;
 }
 
@@ -66,11 +68,13 @@ function getVolumeData(vol) {
 // Fetch the data every 5 minutes
 setInterval(function() {
   var dataTable = fetchData();//get data build table
-  getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+  var data=getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+  window.focus();
+  displayPopup(data)
 }, 300000); // 5 minutes in milliseconds
 //}, 3000); // 3 seconds in milliseconds for testing
 
 
 // Focus the tab and display the pop-up dialog box
-window.focus();
+//window.focus();
 //displayPopup();
