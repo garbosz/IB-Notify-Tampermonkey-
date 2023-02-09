@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         IB Notify
+// @name         IB Notify(beta)
 // @namespace    trans-logistics.amazon.com
 // @version      0.4
 // @description  pop up notification for new manifests to prevent user from missing important updates
@@ -94,9 +94,9 @@ function getVolumeData(vol) {
         processed.shift();
           console.log(processed);
       }
+      notifyMe(vol[i]);
       window.blur();
       window.focus();
-      notifyMe(vol[i]);
       displayPopup(vol[i]);
       break;
     }
