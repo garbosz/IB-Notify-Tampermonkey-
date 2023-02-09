@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      0.3
+// @version      0.3.1
 // @description  pop up notification for new manifests to prevent user from missing important updates
 // @author       garbosz@
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
@@ -39,7 +39,6 @@ let processed=[];
   document.body.appendChild(testButton);
 
   testButton.addEventListener ("click", function() {
-      setTimeout
   var dataTable = fetchData();//get data build table
   var data=getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
   //window.focus();
@@ -66,14 +65,14 @@ function notifyMe(vol) {
   } else if (Notification.permission === "granted") {
     // Check whether notification permissions have already been granted;
     // if so, create a notification
-    const notification = new Notification("New Manifest! @"+current.toLocaleTimeString()+"\n VRID: "+vol.firstChild.dataset.vrid+"click for details");
+    const notification = new Notification("New Manifest!"+" \nVRID: "+vol.firstChild.dataset.vrid+" click for details");
     // …
   } else if (Notification.permission !== "denied") {
     // We need to ask the user for permission
     Notification.requestPermission().then((permission) => {
       // If the user accepts, let's create a notification
       if (permission === "granted") {
-        const notification = new Notification("New Manifest! @"+current.toLocaleTimeString()+"\n VRID: "+vol.firstChild.dataset.vrid+"click for details");
+        const notification = new Notification("New Manifest!"+" \nVRID: "+vol.firstChild.dataset.vrid+" click for details");
         // …
       }
     });
