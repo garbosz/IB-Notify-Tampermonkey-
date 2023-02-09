@@ -40,7 +40,7 @@ document.body.appendChild(testButton);
 
 testButton.addEventListener ("click", function() {
     var dataTable = fetchData();//get data build table
-    var data=getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
     //window.focus();
     //displayPopup(data);
     //notifyMe(data);
@@ -97,8 +97,8 @@ function getVolumeData(vol) {
             }
             notifyMe(vol[i]);
             setTimeout(300);
-            window.blur();
-            window.focus();
+            //window.blur();
+            //window.focus();
             displayPopup(vol[i]);
             break;
         }
@@ -108,7 +108,7 @@ function getVolumeData(vol) {
 // Fetch the data every 5 minutes
 setInterval(function() {
     var dataTable = fetchData();//get data build table
-    var data=getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
     // window.focus();
     // displayPopup(data);
     // notifyMe(data);
