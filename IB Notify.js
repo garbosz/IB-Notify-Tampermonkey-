@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      0.3.1
+// @version      0.4
 // @description  pop up notification for new manifests to prevent user from missing important updates
 // @author       garbosz@
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
@@ -58,28 +58,20 @@ function displayPopup(vol) {
 function notifyMe(vol) {
     if(vol.textContent > 0){
     var current = new Date();
-    Notification.requireInteraction=true;
-  if (!("Notification" in window)) {
-    // Check if the browser supports notifications
-    alert("This browser does not support desktop notification");
-  } else if (Notification.permission === "granted") {
-    // Check whether notification permissions have already been granted;
-    // if so, create a notification
-    const notification = new Notification("New Manifest!"+" \nVRID: "+vol.firstChild.dataset.vrid+" click for details");
-    // …
-  } else if (Notification.permission !== "denied") {
-    // We need to ask the user for permission
-    Notification.requestPermission().then((permission) => {
-      // If the user accepts, let's create a notification
-      if (permission === "granted") {
-        const notification = new Notification("New Manifest!"+" \nVRID: "+vol.firstChild.dataset.vrid+" click for details");
-        // …
-      }
-    });
-  }
+    if ('Notification' in window) {
+  Notification.requestPermission().then(function(permission) {
+    if (permission === "granted") {
+      var notification = new Notification("New Manifest!", {
+        body: "detected @"+current.toLocaleTimeString()+" \nVRID: "+vol.firstChild.dataset.vrid+"\nVolume on board: "+vol.textContent,
+        requireInteraction: true
+      });
     }
+  });
+} else {
+  console.log("This browser does not support notifications.");
 }
-
+}
+}
 function fetchData() {
   var vol = document.getElementsByClassName("inTrailerP");
     console.log(vol)
