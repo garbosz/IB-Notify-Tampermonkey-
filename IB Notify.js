@@ -1,16 +1,24 @@
 // ==UserScript==
 // @name         IB Notify(beta)
 // @namespace    trans-logistics.amazon.com
-// @version      0.4
+// @version      0.5
 // @description  pop up notification for new manifests to prevent user from missing important updates
 // @author       garbosz@
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
 // @match        https://trans-logistics-eu.amazon.com/ssp/dock/*
 // @match        https://trans-logistics.amazon.com/ssp/dock/ib
 // @grant        GM_notification
+// @grant        GM_addStyle
 // @run-at document-end
 // ==/UserScript==
 
+// wait 5 seconds to let IB load data
+setTimeout(init(),5000);
+//run at start
+function init(){
+    console.log("waited patiently");
+}
+//create trouble shooting buttons
 let processed=[];
 var resetButton = document.createElement("button");
 resetButton.innerHTML = "Reset";
@@ -39,23 +47,26 @@ testButton.style.cursor = "pointer";
 document.body.appendChild(testButton);
 
 testButton.addEventListener ("click", function() {
+    console.log("Test Button Pressed");
     var dataTable = fetchData();//get data build table
     getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
     //window.focus();
     //displayPopup(data);
     //notifyMe(data);
     });
-// Function to display the pop-up dialog box
-setTimeout(5000);
 
+//this handles making the popup on the page
 function displayPopup(vol) {
+    console.log("creating Popup");
     if(vol.textContent > 0){
         var current = new Date();
         alert("New Manifest! @"+current.toLocaleTimeString()+"\nVRID: "+vol.firstChild.dataset.vrid+"\nVolume on board: "+vol.textContent);
     }
 }
 
+//this handles creating the system notification
 function notifyMe(vol) {
+    console.log("creating Notification");
     if(vol.textContent > 0){
         var current = new Date();
         if ('Notification' in window) {
@@ -63,9 +74,14 @@ function notifyMe(vol) {
                 if (permission === "granted") {
                     var notification = new Notification("New Manifest!", {
                         body: "detected @"+current.toLocaleTimeString()+" \nVRID: "+vol.firstChild.dataset.vrid+"\nVolume on board: "+vol.textContent,
+                        icon:"https://cdn1.iconfinder.com/data/icons/heavy-construction-machinery-trucks-and-tractors-e/16/32_semi-truck-512.png",
                         requireInteraction: true
                     });
+                    notification.addEventListener("click", function() {
+                        window.focus();
+                    });
                 }
+                //displayPopup(vol);
             });
         } else {
             console.log("This browser does not support notifications.");
@@ -73,17 +89,21 @@ function notifyMe(vol) {
     }
 }
 
+//search HTML in host page to look for VRID manifests
 function fetchData() {
+    console.log("fetching Data");
     var vol = document.getElementsByClassName("inTrailerP");
     console.log(vol)
-    console.log(vol[0].textContent)//this is the volume
-    console.log(vol[0].firstChild.dataset.vrid)//this is the VRID
+    //console.log(vol[0].textContent)//this is the volume
+    //console.log(vol[0].firstChild.dataset.vrid)//this is the VRID
     var dashboardElement=vol
 
     return dashboardElement;
 }
 
+//parse data and find if there is a VRID that is both manifested and not in the processed blacklist
 function getVolumeData(vol) {
+    console.log("parsing data");
     let output = [];
     const maxLength = 30;
     for (let i = 0; i < vol.length; i++) {
@@ -98,19 +118,38 @@ function getVolumeData(vol) {
             notifyMe(vol[i]);
             setTimeout(300);
             //window.blur();
-            //window.focus();
-            displayPopup(vol[i]);
+            window.focus();
+            setTimeout(displayPopup,500,vol[i]);
             break;
         }
     }
 }
 
-// Fetch the data every 5 minutes
-setInterval(function() {
+//run at start
+setTimeout(function() {
+    console.log("running IB Notify init");
     var dataTable = fetchData();//get data build table
+    if(dataTable.length ==0){
+    console.log("fetched data was zero length, waiting and trying again");
+    setTimeout(() => {
+        dataTable=fetchData();
+        console.log("Delayed for 1 second.");
+    }, "1000")
+    }
     getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
-    // window.focus();
-    // displayPopup(data);
-    // notifyMe(data);
-    }, 300000); // 5 minutes in milliseconds
+}, 5000); // 5 seconds in milliseconds
+
+// run every 5 mins
+setInterval(function() {
+    console.log("running IB Notify timed");
+    var dataTable = fetchData();//get data build table
+    if(dataTable.length ==0){
+    console.log("fetched data was zero length, waiting and trying again");
+    setTimeout(() => {
+        dataTable=fetchData();
+        console.log("Delayed for 1 second.");
+    }, "1000")
+    }
+    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+}, 300000); // 5 minutes in milliseconds
 //}, 3000); // 3 seconds in milliseconds for testing
