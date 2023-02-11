@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify(beta)
 // @namespace    trans-logistics.amazon.com
-// @version      0.5
+// @version      0.6
 // @description  pop up notification for new manifests to prevent user from missing important updates
 // @author       garbosz@
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
@@ -57,17 +57,21 @@ testButton.addEventListener ("click", function() {
 
 //this handles making the popup on the page
 function displayPopup(vol) {
-    console.log("creating Popup");
+    console.log("checking Popup");
     if(vol.textContent > 0){
+        console.log("conditions met...posting");
         var current = new Date();
         alert("New Manifest! @"+current.toLocaleTimeString()+"\nVRID: "+vol.firstChild.dataset.vrid+"\nVolume on board: "+vol.textContent);
+    } else {
+        console.log("conditions not met...cancelling popup");
     }
 }
 
 //this handles creating the system notification
 function notifyMe(vol) {
-    console.log("creating Notification");
+    console.log("checking Notification");
     if(vol.textContent > 0){
+        console.log("conditions met...posting");
         var current = new Date();
         if ('Notification' in window) {
             Notification.requestPermission().then(function(permission) {
@@ -86,6 +90,8 @@ function notifyMe(vol) {
         } else {
             console.log("This browser does not support notifications.");
         }
+    } else {
+        console.log("Conditions not met...cancelling Notification");
     }
 }
 
@@ -103,15 +109,18 @@ function fetchData() {
 
 //parse data and find if there is a VRID that is both manifested and not in the processed blacklist
 function getVolumeData(vol) {
-    console.log("parsing data");
+    console.log("getting volume data");
     let output = [];
     const maxLength = 30;
     for (let i = 0; i < vol.length; i++) {
-        if (vol[i].textContent.trim().length > 0 && !processed.includes(vol[i].firstChild.dataset.vrid)) {
+        console.log("parsing: "+vol[i].firstChild.dataset.vrid);
+        if (vol[i].textContent.trim() > 0 && !processed.includes(vol[i].firstChild.dataset.vrid)) {
+            console.log(vol[i].firstChild.dataset.vrid+" passed");
             output.push([vol[i].firstChild.dataset.vrid, vol[i].textContent.trim()]);
             processed.push(vol[i].firstChild.dataset.vrid);
             console.log(vol[i]);
             if (processed.length > maxLength) {
+                console.log("processed list exceeded maximum");
                 processed.shift();
                 console.log(processed);
             }
@@ -127,7 +136,8 @@ function getVolumeData(vol) {
 
 //run at start
 setTimeout(function() {
-    console.log("running IB Notify init");
+    var current=new Date();
+    console.log("running IB Notify init @ "+current.toLocaleTimeString());
     var dataTable = fetchData();//get data build table
     if(dataTable.length ==0){
     console.log("fetched data was zero length, waiting and trying again");
@@ -141,7 +151,8 @@ setTimeout(function() {
 
 // run every 5 mins
 setInterval(function() {
-    console.log("running IB Notify timed");
+    var current=new Date();
+    console.log("running IB Notify timed @ "+current.toLocaleTimeString());
     var dataTable = fetchData();//get data build table
     if(dataTable.length ==0){
     console.log("fetched data was zero length, waiting and trying again");
