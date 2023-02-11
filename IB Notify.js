@@ -109,11 +109,11 @@ function fetchData() {
 
 //parse data and find if there is a VRID that is both manifested and not in the processed blacklist
 function getVolumeData(vol) {
-    console.log("getting volume data");
+    console.log("getting volume data and checking for manifests");
     let output = [];
     const maxLength = 30;
     for (let i = 0; i < vol.length; i++) {
-        console.log("parsing: "+vol[i].firstChild.dataset.vrid);
+        console.log("checking: "+vol[i].firstChild.dataset.vrid);
         if (vol[i].textContent.trim() > 0 && !processed.includes(vol[i].firstChild.dataset.vrid)) {
             console.log(vol[i].firstChild.dataset.vrid+" passed");
             output.push([vol[i].firstChild.dataset.vrid, vol[i].textContent.trim()]);
