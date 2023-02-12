@@ -101,7 +101,7 @@ setInterval(function() {
         console.log("Timer Resetting soon, prepping IB Notify for new data");
         setTimeout(hostTrigger, 70 * 1000);
     }
-}, 60 * 1000);
+}, 40 * 1000);
 
 //this handles making the popup on the page, NOTE; it will pause execution on the rest of the page until dismissed
 function displayPopup(vol) {
