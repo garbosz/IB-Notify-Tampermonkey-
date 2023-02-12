@@ -60,7 +60,7 @@ testButton.addEventListener("click", function () {
         }, "1000")
     }
     getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
-}); 
+});
 
 //runs at start to grab current manifests right when the page loads. a little unnecessary but assures user the script is working
 setTimeout(function() {
@@ -92,16 +92,22 @@ function hostTrigger() {
     getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
 }
 
-// checks every 60 seconds to see if refresh timer is in the final 60 seconds, and then waits 70 seconds before calling the hostTrigger function
+// checks every 40 seconds to see if refresh timer is in the final 60 seconds, and then waits 70 seconds before calling the hostTrigger function
+var delay=40;
 setInterval(function() {
     console.log("checking for final minute");
     var xpath = "//*[@class='redText']";
     var result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     if (result.singleNodeValue) {
+        delay=70;
+        console.log("delay is "+delay);
         console.log("Timer Resetting soon, prepping IB Notify for new data");
         setTimeout(hostTrigger, 70 * 1000);
+    } else {
+        delay=40;
+        console.log("delay is "+delay);
     }
-}, 40 * 1000);
+}, delay * 1000);
 
 //this handles making the popup on the page, NOTE; it will pause execution on the rest of the page until dismissed
 function displayPopup(vol) {
