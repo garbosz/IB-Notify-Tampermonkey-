@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         IB Notify(beta)
+// @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      0.6
+// @version      1.0
 // @description  pop up notification for new manifests to prevent user from missing important updates
 // @author       garbosz@
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
