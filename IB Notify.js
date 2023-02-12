@@ -13,15 +13,17 @@
 // ==/UserScript==
 
 // wait 5 seconds to let IB load data
-setTimeout(init(),5000);
+setTimeout(init(), 5000);
+
 //run at start
 function init(){
     console.log("waited patiently");
 }
+
 //create trouble shooting buttons
 let processed=[];
 var resetButton = document.createElement("button");
-resetButton.innerHTML = "Reset";
+resetButton.innerHTML = "Reset List";
 resetButton.style.padding = "10px 20px";
 resetButton.style.backgroundColor = "#4CAF50";
 resetButton.style.color = "white";
@@ -37,7 +39,7 @@ resetButton.addEventListener ("click", function() {
 });
 
 var testButton = document.createElement("button");
-testButton.innerHTML = "Test";
+testButton.innerHTML = "Test Notification";
 testButton.style.padding = "10px 20px";
 testButton.style.backgroundColor = "#4CAF50";
 testButton.style.color = "white";
@@ -46,16 +48,62 @@ testButton.style.borderRadius = "4px";
 testButton.style.cursor = "pointer";
 document.body.appendChild(testButton);
 
-testButton.addEventListener ("click", function() {
-    console.log("Test Button Pressed");
+testButton.addEventListener("click", function () {
+    var current=new Date();
+    console.log("IB Notify triggered manually @ "+current.toLocaleTimeString());
     var dataTable = fetchData();//get data build table
+    if(dataTable.length ==0){//catch for if fetchdata is run before page can finish loading data
+        console.log("fetched data was zero length, waiting and trying again");
+        setTimeout(() => {
+            console.log("trying fetchData again.");
+            dataTable=fetchData();
+        }, "1000")
+    }
     getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
-    //window.focus();
-    //displayPopup(data);
-    //notifyMe(data);
-    });
+}); 
 
-//this handles making the popup on the page
+//runs at start to grab current manifests right when the page loads. a little unnecessary but assures user the script is working
+setTimeout(function() {
+    var current=new Date();
+    console.log("running IB Notify init @ "+current.toLocaleTimeString());
+    var dataTable = fetchData();//get data build table
+    if(dataTable.length ==0){//catch for if fetchdata is run before page can finish loading data
+        console.log("fetched data was zero length, waiting and trying again");
+        setTimeout(() => {
+            console.log("trying fetchData again.");
+            dataTable=fetchData();
+        }, "1000")
+    }
+    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+}, 5000); // 5 seconds in milliseconds
+
+//this is the function called based on the refresh timer built into the page
+function hostTrigger() {
+    var current=new Date();
+    console.log("IB Notify triggered by Host @ "+current.toLocaleTimeString());
+    var dataTable = fetchData();//get data build table
+    if(dataTable.length ==0){//catch for if fetchdata is run before page can finish loading data
+        console.log("fetched data was zero length, waiting and trying again");
+        setTimeout(() => {
+            console.log("trying fetchData again.");
+            dataTable=fetchData();
+        }, "1000")
+    }
+    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+}
+
+// checks every 60 seconds to see if refresh timer is in the final 60 seconds, and then waits 70 seconds before calling the hostTrigger function
+setInterval(function() {
+    console.log("checking for final minute");
+    var xpath = "//*[@class='redText']";
+    var result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    if (result.singleNodeValue) {
+        console.log("Timer Resetting soon, prepping IB Notify for new data");
+        setTimeout(hostTrigger, 70 * 1000);
+    }
+}, 60 * 1000);
+
+//this handles making the popup on the page, NOTE; it will pause execution on the rest of the page until dismissed
 function displayPopup(vol) {
     console.log("checking Popup");
     if(vol.textContent > 0){
@@ -67,7 +115,7 @@ function displayPopup(vol) {
     }
 }
 
-//this handles creating the system notification
+//this handles creating the system notification, NOTE: notification API not fully supported by firefox. chrome or Edge is recommended
 function notifyMe(vol) {
     console.log("checking Notification");
     if(vol.textContent > 0){
@@ -85,7 +133,6 @@ function notifyMe(vol) {
                         window.focus();
                     });
                 }
-                //displayPopup(vol);
             });
         } else {
             console.log("This browser does not support notifications.");
@@ -100,8 +147,6 @@ function fetchData() {
     console.log("fetching Data");
     var vol = document.getElementsByClassName("inTrailerP");
     console.log(vol)
-    //console.log(vol[0].textContent)//this is the volume
-    //console.log(vol[0].firstChild.dataset.vrid)//this is the VRID
     var dashboardElement=vol
 
     return dashboardElement;
@@ -126,41 +171,9 @@ function getVolumeData(vol) {
             }
             notifyMe(vol[i]);
             setTimeout(300);
-            //window.blur();
             window.focus();
             setTimeout(displayPopup,500,vol[i]);
             break;
         }
     }
 }
-
-//run at start
-setTimeout(function() {
-    var current=new Date();
-    console.log("running IB Notify init @ "+current.toLocaleTimeString());
-    var dataTable = fetchData();//get data build table
-    if(dataTable.length ==0){
-    console.log("fetched data was zero length, waiting and trying again");
-    setTimeout(() => {
-        dataTable=fetchData();
-        console.log("Delayed for 1 second.");
-    }, "1000")
-    }
-    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
-}, 5000); // 5 seconds in milliseconds
-
-// run every 5 mins
-setInterval(function() {
-    var current=new Date();
-    console.log("running IB Notify timed @ "+current.toLocaleTimeString());
-    var dataTable = fetchData();//get data build table
-    if(dataTable.length ==0){
-    console.log("fetched data was zero length, waiting and trying again");
-    setTimeout(() => {
-        dataTable=fetchData();
-        console.log("Delayed for 1 second.");
-    }, "1000")
-    }
-    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
-}, 300000); // 5 minutes in milliseconds
-//}, 3000); // 3 seconds in milliseconds for testing
