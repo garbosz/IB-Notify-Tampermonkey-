@@ -2,7 +2,7 @@
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
 // @version      1.1
-// @description  pop up notification for new manifests to prevent user from missing important updates. should also auto update from github
+// @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
 // @match        https://trans-logistics-eu.amazon.com/ssp/dock/*
