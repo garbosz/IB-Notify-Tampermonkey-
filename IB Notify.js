@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.4.1
+// @version      1.4.2
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
