@@ -4,6 +4,9 @@
 // @version      1.2
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
+// @downloadURL  https://github.com/garbosz/IB-Notify-Tampermonkey-/releases
+// @updateURL    https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
+// @update
 // @match        https://trans-logistics.amazon.com/ssp/dock/*
 // @match        https://trans-logistics-eu.amazon.com/ssp/dock/*
 // @match        https://trans-logistics.amazon.com/ssp/dock/ib
