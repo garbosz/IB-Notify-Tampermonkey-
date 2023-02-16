@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.5
+// @version      1.6
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -50,7 +50,7 @@ function init(){
 }
 
 //load processed list from cashe
-const processed = loadProcessedArray();
+var processed = loadProcessedArray();
 
 
 //create trouble shooting buttons
@@ -196,30 +196,45 @@ function fetchData() {
     return dashboardElement;
 }
 
-//parse data and find if there is a VRID that is both manifested and not in the processed blacklist
-function getVolumeData(vol) {
-    console.log("getting volume data and checking for manifests");
-    let output = [];
-    const maxLength = 30;
-    for (let i = 0; i < vol.length; i++) {
+function getVolumeData(vol){
+    console.log("parsing volume data and checking for new manifests");
+    const maxLength=30;
+    for(var i=0; 1<vol.length; i++){
         console.log("checking: "+vol[i].firstChild.dataset.vrid);
-        if (vol[i].textContent.trim() > 0 && !processed.includes(vol[i].firstChild.dataset.vrid)) {
-            console.log(vol[i].firstChild.dataset.vrid+" passed");
-            output.push([vol[i].firstChild.dataset.vrid, vol[i].textContent.trim()]);
-            processed.push(vol[i].firstChild.dataset.vrid);
-            console.log(vol[i]);
-            console.log("cashing processed list");
-            cacheProcessedArray(processed);
-            if (processed.length > maxLength) {
-                console.log("processed list exceeded maximum");
-                processed.shift();
+        if(vol[i].outerText>0){//check if vol[i] is manifested
+            console.log(vol[i].firstChild.dataset.vrid+" Manifested");
+            console.log("checking if processed=null");
+            if(processed){//check if processed has any items in it
+                console.log("processedhas stuff in it")
+                if(!processed.includes(vol[i].firstChild.dataset.vrid)){//check if vol[i] is in processed
+                    console.log("checking processed length and caching");
+                    if (processed.length > maxLength) {//check if processed is too long
+                        console.log("processed list exceeded maximum");
+                        processed.shift();
+                        console.log(processed);
+                    }
+                    processed.push(vol[i].firstChild.dataset.vrid);
+                    console.log(processed);
+                    console.log("cashing processed list");
+                    cacheProcessedArray(processed);
+                    console.log("calling notifications");
+                    notifyMe(vol[i]);
+                    setTimeout(displayPopup,500,vol[i]);
+                }else{//if vol[i] is inside processed
+                    console.log("already posted");
+                }
+            }else{//continue if processed==null
+                processed.push(vol[i].firstChild.dataset.vrid);
+                console.log("processed was empty");
                 console.log(processed);
+                console.log("cashing processed list");
+                cacheProcessedArray(processed);
+                console.log("calling notifications");
+                notifyMe(vol[i]);
+                setTimeout(displayPopup,500,vol[i]);
             }
-            notifyMe(vol[i]);
-            setTimeout(300);
-            window.focus();
-            setTimeout(displayPopup,500,vol[i]);
-            break;
+        } else{//vol[i] is not manifested
+            console.log(vol[i].firstChild.dataset.vrid+" not manifested");
         }
     }
 }
