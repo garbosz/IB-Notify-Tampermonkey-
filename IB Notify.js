@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.6
+// @version      1.6.1
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -16,6 +16,7 @@
 
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
+const ver="1.6.1";
 
 // Define the key name for the cached array
 const PROCESSED_ARRAY_KEY = 'processedArray';
@@ -23,6 +24,7 @@ const PROCESSED_ARRAY_KEY = 'processedArray';
 // Function to cache the processed array
 function cacheProcessedArray(array) {
     console.log("storing processed items");
+    console.log("current List: "+processed);
     // Convert the array to a string
     const arrayString = JSON.stringify(array);
 
@@ -67,6 +69,7 @@ document.body.appendChild(resetButton);
 
 resetButton.addEventListener ("click", function() {
     processed = [];
+    cacheProcessedArray(processed);
     console.log("Processed array reset to empty:", processed);
 });
 
@@ -96,23 +99,14 @@ testButton.addEventListener("click", function () {
 
 //runs at start to grab current manifests right when the page loads. a little unnecessary but assures user the script is working
 setTimeout(function() {
-    var current=new Date();
-    console.log("running IB Notify init @ "+current.toLocaleTimeString());
-    var dataTable = fetchData();//get data build table
-    if(dataTable.length ==0){//catch for if fetchdata is run before page can finish loading data
-        console.log("fetched data was zero length, waiting and trying again");
-        setTimeout(() => {
-            console.log("trying fetchData again.");
-            dataTable=fetchData();
-        }, "1000")
-    }
-    getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+    hostTrigger();
 }, 5000); // 5 seconds in milliseconds
 
 //this is the function called based on the refresh timer built into the page
 function hostTrigger() {
     var current=new Date();
-    console.log("IB Notify triggered by Host @ "+current.toLocaleTimeString());
+    console.log("IB Notify triggered @ "+current.toLocaleTimeString());
+    console.log("current Version: "+ver);
     var dataTable = fetchData();//get data build table
     if(dataTable.length ==0){//catch for if fetchdata is run before page can finish loading data
         console.log("fetched data was zero length, waiting and trying again");
