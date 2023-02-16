@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.4.2
+// @version      1.5
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -17,13 +17,43 @@
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
 
+// Define the key name for the cached array
+const PROCESSED_ARRAY_KEY = 'processedArray';
+
+// Function to cache the processed array
+function cacheProcessedArray(array) {
+    console.log("storing processed items");
+    // Convert the array to a string
+    const arrayString = JSON.stringify(array);
+
+    // Store the array string in local storage
+    localStorage.setItem(PROCESSED_ARRAY_KEY, arrayString);
+}
+
+// Function to load the cached processed array
+function loadProcessedArray() {
+    console.log("loading processed items");
+    // Get the array string from local storage
+    const arrayString = localStorage.getItem(PROCESSED_ARRAY_KEY);
+
+    // Parse the array string to an actual array
+    const array = JSON.parse(arrayString);
+
+    return array;
+}
+
+
 //run at start
 function init(){
     console.log("waited patiently");
+
 }
 
+//load processed list from cashe
+const processed = loadProcessedArray();
+
+
 //create trouble shooting buttons
-let processed=[];
 var resetButton = document.createElement("button");
 resetButton.innerHTML = "Reset List";
 resetButton.style.padding = "10px 20px";
@@ -93,7 +123,7 @@ function hostTrigger() {
     }
     getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
 }
-
+/*
 // checks every 40 seconds to see if refresh timer is in the final 60 seconds, and then waits 70 seconds before calling the hostTrigger function
 var delay=40;
 setInterval(function() {
@@ -109,6 +139,12 @@ setInterval(function() {
         delay=40;
         console.log("delay is "+delay);
     }
+}, delay * 1000);
+*/
+var delay=60;
+setInterval(function() {
+    console.log("timer ended refreshing and executing");
+    location.reload()
 }, delay * 1000);
 
 //this handles making the popup on the page, NOTE; it will pause execution on the rest of the page until dismissed
@@ -172,6 +208,8 @@ function getVolumeData(vol) {
             output.push([vol[i].firstChild.dataset.vrid, vol[i].textContent.trim()]);
             processed.push(vol[i].firstChild.dataset.vrid);
             console.log(vol[i]);
+            console.log("cashing processed list");
+            cacheProcessedArray(processed);
             if (processed.length > maxLength) {
                 console.log("processed list exceeded maximum");
                 processed.shift();
