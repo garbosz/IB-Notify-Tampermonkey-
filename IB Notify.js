@@ -135,7 +135,7 @@ setInterval(function() {
     }
 }, delay * 1000);
 */
-var delay=60;
+var delay=300;
 setInterval(function() {
     console.log("timer ended refreshing and executing");
     location.reload()
