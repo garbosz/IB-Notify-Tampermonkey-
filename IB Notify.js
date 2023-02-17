@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.6.1
+// @version      1.6.2
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -16,7 +16,7 @@
 
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
-const ver="1.6.1";
+const ver="1.6.2";
 
 // Define the key name for the cached array
 const PROCESSED_ARRAY_KEY = 'processedArray';
@@ -53,7 +53,6 @@ function init(){
 
 //load processed list from cashe
 var processed = loadProcessedArray();
-
 
 //create trouble shooting buttons
 var resetButton = document.createElement("button");
@@ -113,7 +112,8 @@ function hostTrigger() {
         setTimeout(() => {
             console.log("trying fetchData again.");
             dataTable=fetchData();
-        }, "1000")
+            getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
+        }, "3000")
     }
     getVolumeData(dataTable)//chug through data if new manifest found, add to blacklist and call popup
 }
@@ -193,13 +193,17 @@ function fetchData() {
 function getVolumeData(vol){
     console.log("parsing volume data and checking for new manifests");
     const maxLength=30;
+    var res=processed.filter(elements => {
+        return (elements != null && elements !== undefined && elements !== "");
+    });
+    console.log("corrected processed list: "+processed);
     for(var i=0; 1<vol.length; i++){
         console.log("checking: "+vol[i].firstChild.dataset.vrid);
         if(vol[i].outerText>0){//check if vol[i] is manifested
             console.log(vol[i].firstChild.dataset.vrid+" Manifested");
             console.log("checking if processed=null");
-            if(processed){//check if processed has any items in it
-                console.log("processedhas stuff in it")
+            if(processed.length>0){//check if processed has any items in it
+                console.log("processed has stuff in it")
                 if(!processed.includes(vol[i].firstChild.dataset.vrid)){//check if vol[i] is in processed
                     console.log("checking processed length and caching");
                     if (processed.length > maxLength) {//check if processed is too long
@@ -208,7 +212,7 @@ function getVolumeData(vol){
                         console.log(processed);
                     }
                     processed.push(vol[i].firstChild.dataset.vrid);
-                    console.log(processed);
+                    console.log("processed: "+processed);
                     console.log("cashing processed list");
                     cacheProcessedArray(processed);
                     console.log("calling notifications");
@@ -224,6 +228,7 @@ function getVolumeData(vol){
                 console.log("cashing processed list");
                 cacheProcessedArray(processed);
                 console.log("calling notifications");
+                window.focus();
                 notifyMe(vol[i]);
                 setTimeout(displayPopup,500,vol[i]);
             }
