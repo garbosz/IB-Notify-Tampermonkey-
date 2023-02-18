@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.6.2
+// @version      1.6.3
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -16,7 +16,7 @@
 
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
-const ver="1.6.2";
+const ver="1.6.3";
 
 // Define the key name for the cached array
 const PROCESSED_ARRAY_KEY = 'processedArray';
@@ -179,6 +179,10 @@ function notifyMe(vol) {
         console.log("Conditions not met...cancelling Notification");
     }
 }
+
+notifyMe.addEventListener("click", function() {
+    window.focus();
+});
 
 //search HTML in host page to look for VRID manifests
 function fetchData() {
