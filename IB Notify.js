@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.6.3
+// @version      1.6.4
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -16,7 +16,7 @@
 
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
-const ver="1.6.3";
+const ver="1.6.4";
 
 // Define the key name for the cached array
 const PROCESSED_ARRAY_KEY = 'processedArray';
@@ -135,7 +135,7 @@ setInterval(function() {
     }
 }, delay * 1000);
 */
-var delay=300;
+var delay=250;
 setInterval(function() {
     console.log("timer ended refreshing and executing");
     location.reload()
@@ -145,11 +145,11 @@ setInterval(function() {
 function displayPopup(vol) {
     console.log("checking Popup");
     if(vol.textContent > 0){
-        console.log("conditions met...posting");
+        console.log("\tconditions met...posting");
         var current = new Date();
         alert("New Manifest! @"+current.toLocaleTimeString()+"\nVRID: "+vol.firstChild.dataset.vrid+"\nVolume on board: "+vol.textContent);
     } else {
-        console.log("conditions not met...cancelling popup");
+        console.log("\tconditions not met...cancelling popup");
     }
 }
 
@@ -157,7 +157,7 @@ function displayPopup(vol) {
 function notifyMe(vol) {
     console.log("checking Notification");
     if(vol.textContent > 0){
-        console.log("conditions met...posting");
+        console.log("\tconditions met...posting");
         var current = new Date();
         if ('Notification' in window) {
             Notification.requestPermission().then(function(permission) {
@@ -173,10 +173,10 @@ function notifyMe(vol) {
                 }
             });
         } else {
-            console.log("This browser does not support notifications.");
+            console.log("\tThis browser does not support notifications.");
         }
     } else {
-        console.log("Conditions not met...cancelling Notification");
+        console.log("\tConditions not met...cancelling Notification");
     }
 }
 
@@ -204,40 +204,37 @@ function getVolumeData(vol){
     for(var i=0; 1<vol.length; i++){
         console.log("checking: "+vol[i].firstChild.dataset.vrid);
         if(vol[i].outerText>0){//check if vol[i] is manifested
-            console.log(vol[i].firstChild.dataset.vrid+" Manifested");
-            console.log("checking if processed=null");
+            console.log("\tManifested");
+            console.log("\tchecking if processed=null");
             if(processed.length>0){//check if processed has any items in it
-                console.log("processed has stuff in it")
+                console.log("\tprocessed has data")
+                console.log("\tchecking if manifest is new")
                 if(!processed.includes(vol[i].firstChild.dataset.vrid)){//check if vol[i] is in processed
-                    console.log("checking processed length and caching");
+                    console.log("checking if processed exceeds maximum");
                     if (processed.length > maxLength) {//check if processed is too long
                         console.log("processed list exceeded maximum");
                         processed.shift();
                         console.log(processed);
                     }
                     processed.push(vol[i].firstChild.dataset.vrid);
-                    console.log("processed: "+processed);
-                    console.log("cashing processed list");
+                    //console.log("processed: "+processed);
                     cacheProcessedArray(processed);
-                    console.log("calling notifications");
                     notifyMe(vol[i]);
                     setTimeout(displayPopup,500,vol[i]);
                 }else{//if vol[i] is inside processed
-                    console.log("already posted");
+                    console.log("\t\talready posted");
                 }
             }else{//continue if processed==null
                 processed.push(vol[i].firstChild.dataset.vrid);
                 console.log("processed was empty");
                 console.log(processed);
-                console.log("cashing processed list");
                 cacheProcessedArray(processed);
-                console.log("calling notifications");
                 window.focus();
                 notifyMe(vol[i]);
                 setTimeout(displayPopup,500,vol[i]);
             }
         } else{//vol[i] is not manifested
-            console.log(vol[i].firstChild.dataset.vrid+" not manifested");
+            console.log("\tnot manifested");
         }
     }
 }
