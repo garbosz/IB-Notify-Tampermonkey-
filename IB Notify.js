@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.6.4
+// @version      1.6.5
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -16,7 +16,7 @@
 
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
-const ver="1.6.4";
+const ver="1.6.5";
 
 // Define the key name for the cached array
 const PROCESSED_ARRAY_KEY = 'processedArray';
@@ -52,10 +52,10 @@ function init(){
 }
 
 //load processed list from cashe
-var processed = loadProcessedArray();
+let processed = loadProcessedArray();
 
 //create trouble shooting buttons
-var resetButton = document.createElement("button");
+let resetButton = document.createElement("button");
 resetButton.innerHTML = "Reset List";
 resetButton.style.padding = "10px 20px";
 resetButton.style.backgroundColor = "#4CAF50";
@@ -72,7 +72,7 @@ resetButton.addEventListener ("click", function() {
     console.log("Processed array reset to empty:", processed);
 });
 
-var testButton = document.createElement("button");
+let testButton = document.createElement("button");
 testButton.innerHTML = "Test Notification";
 testButton.style.padding = "10px 20px";
 testButton.style.backgroundColor = "#4CAF50";
@@ -83,9 +83,9 @@ testButton.style.cursor = "pointer";
 document.body.appendChild(testButton);
 
 testButton.addEventListener("click", function () {
-    var current=new Date();
+    let current=new Date();
     console.log("IB Notify triggered manually @ "+current.toLocaleTimeString());
-    var dataTable = fetchData();//get data build table
+    let dataTable = fetchData();//get data build table
     if(dataTable.length ==0){//catch for if fetchdata is run before page can finish loading data
         console.log("fetched data was zero length, waiting and trying again");
         setTimeout(() => {
@@ -103,10 +103,10 @@ setTimeout(function() {
 
 //this is the function called based on the refresh timer built into the page
 function hostTrigger() {
-    var current=new Date();
+    let current=new Date();
     console.log("IB Notify triggered @ "+current.toLocaleTimeString());
     console.log("current Version: "+ver);
-    var dataTable = fetchData();//get data build table
+    let dataTable = fetchData();//get data build table
     if(dataTable.length ==0){//catch for if fetchdata is run before page can finish loading data
         console.log("fetched data was zero length, waiting and trying again");
         setTimeout(() => {
@@ -119,11 +119,11 @@ function hostTrigger() {
 }
 /*
 // checks every 40 seconds to see if refresh timer is in the final 60 seconds, and then waits 70 seconds before calling the hostTrigger function
-var delay=40;
+let delay=40;
 setInterval(function() {
     console.log("checking for final minute");
-    var xpath = "//*[@class='redText']";
-    var result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    let xpath = "//*[@class='redText']";
+    let result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
     if (result.singleNodeValue) {
         delay=70;
         console.log("delay is "+delay);
@@ -135,7 +135,7 @@ setInterval(function() {
     }
 }, delay * 1000);
 */
-var delay=250;
+let delay=250;
 setInterval(function() {
     console.log("timer ended refreshing and executing");
     location.reload()
@@ -146,7 +146,7 @@ function displayPopup(vol) {
     console.log("checking Popup");
     if(vol.textContent > 0){
         console.log("\tconditions met...posting");
-        var current = new Date();
+        let current = new Date();
         alert("New Manifest! @"+current.toLocaleTimeString()+"\nVRID: "+vol.firstChild.dataset.vrid+"\nVolume on board: "+vol.textContent);
     } else {
         console.log("\tconditions not met...cancelling popup");
@@ -158,11 +158,11 @@ function notifyMe(vol) {
     console.log("checking Notification");
     if(vol.textContent > 0){
         console.log("\tconditions met...posting");
-        var current = new Date();
+        let current = new Date();
         if ('Notification' in window) {
             Notification.requestPermission().then(function(permission) {
                 if (permission === "granted") {
-                    var notification = new Notification("New Manifest!", {
+                    let notification = new Notification("New Manifest!", {
                         body: "detected @"+current.toLocaleTimeString()+" \nVRID: "+vol.firstChild.dataset.vrid+"\nVolume on board: "+vol.textContent,
                         icon:"https://cdn1.iconfinder.com/data/icons/heavy-construction-machinery-trucks-and-tractors-e/16/32_semi-truck-512.png",
                         requireInteraction: true
@@ -178,18 +178,19 @@ function notifyMe(vol) {
     } else {
         console.log("\tConditions not met...cancelling Notification");
     }
+    notifyMe.onclick = (event) => {
+        window.focus();
+    }
 }
 
-notifyMe.addEventListener("click", function() {
-    window.focus();
-});
+
 
 //search HTML in host page to look for VRID manifests
 function fetchData() {
     console.log("fetching Data");
-    var vol = document.getElementsByClassName("inTrailerP");
+    let vol = document.getElementsByClassName("inTrailerP");
     console.log(vol)
-    var dashboardElement=vol
+    let dashboardElement=vol
 
     return dashboardElement;
 }
@@ -197,15 +198,21 @@ function fetchData() {
 function getVolumeData(vol){
     console.log("parsing volume data and checking for new manifests");
     const maxLength=30;
-    var res=processed.filter(elements => {
+    /*
+    let res=processed.filter(elements => {
         return (elements != null && elements !== undefined && elements !== "");
     });
+    */
     console.log("corrected processed list: "+processed);
-    for(var i=0; 1<vol.length; i++){
+    for(let i=0; 1<vol.length; i++){
         console.log("checking: "+vol[i].firstChild.dataset.vrid);
         if(vol[i].outerText>0){//check if vol[i] is manifested
             console.log("\tManifested");
             console.log("\tchecking if processed=null");
+            try{
+                if(processed==null){
+                    let processed=[];
+                    }
             if(processed.length>0){//check if processed has any items in it
                 console.log("\tprocessed has data")
                 console.log("\tchecking if manifest is new")
@@ -233,6 +240,16 @@ function getVolumeData(vol){
                 notifyMe(vol[i]);
                 setTimeout(displayPopup,500,vol[i]);
             }
+        } catch(err){
+            let processed=[];
+            processed.push(vol[i].firstChild.dataset.vrid);
+            console.log("processed list was broken");
+            console.log(processed);
+            cacheProcessedArray(processed);
+            window.focus();
+            notifyMe(vol[i]);
+            setTimeout(displayPopup,500,vol[i]);
+        }
         } else{//vol[i] is not manifested
             console.log("\tnot manifested");
         }
