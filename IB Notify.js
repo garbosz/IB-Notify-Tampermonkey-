@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.6.5
+// @version      1.6.6
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://raw.githubusercontent.com/garbosz/IB-Notify-Tampermonkey-/main/IB%20Notify.js
@@ -16,7 +16,7 @@
 
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
-const ver="1.6.5";
+const ver="1.6.6";
 
 // Define the key name for the cached array
 const PROCESSED_ARRAY_KEY = 'processedArray';
@@ -170,6 +170,8 @@ function notifyMe(vol) {
                     notification.addEventListener("click", function() {
                         window.focus();
                     });
+                } else {
+                    console.log("notifications blocked on this browser");
                 }
             });
         } else {
@@ -198,12 +200,7 @@ function fetchData() {
 function getVolumeData(vol){
     console.log("parsing volume data and checking for new manifests");
     const maxLength=30;
-    /*
-    let res=processed.filter(elements => {
-        return (elements != null && elements !== undefined && elements !== "");
-    });
-    */
-    console.log("corrected processed list: "+processed);
+    console.log("current processed list: "+processed);
     for(let i=0; 1<vol.length; i++){
         console.log("checking: "+vol[i].firstChild.dataset.vrid);
         if(vol[i].outerText>0){//check if vol[i] is manifested
@@ -221,7 +218,7 @@ function getVolumeData(vol){
                     if (processed.length > maxLength) {//check if processed is too long
                         console.log("processed list exceeded maximum");
                         processed.shift();
-                        console.log(processed);
+                        console.log("updated processed list: "+processed);
                     }
                     processed.push(vol[i].firstChild.dataset.vrid);
                     //console.log("processed: "+processed);
@@ -234,7 +231,7 @@ function getVolumeData(vol){
             }else{//continue if processed==null
                 processed.push(vol[i].firstChild.dataset.vrid);
                 console.log("processed was empty");
-                console.log(processed);
+                console.log("Updated Processed list: "+processed);
                 cacheProcessedArray(processed);
                 window.focus();
                 notifyMe(vol[i]);
@@ -244,7 +241,7 @@ function getVolumeData(vol){
             let processed=[];
             processed.push(vol[i].firstChild.dataset.vrid);
             console.log("processed list was broken");
-            console.log(processed);
+            console.log("Updated Processed List: "+processed);
             cacheProcessedArray(processed);
             window.focus();
             notifyMe(vol[i]);
