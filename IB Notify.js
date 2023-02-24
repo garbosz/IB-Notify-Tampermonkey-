@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IB Notify
 // @namespace    trans-logistics.amazon.com
-// @version      1.6.6
+// @version      1.6.7
 // @description  pop up notification for new manifests to prevent user from missing important updates. auto updates enabled by github
 // @author       garbosz@
 // @downloadURL  https://axzile.corp.amazon.com/-/carthamus/download_script/ib-notify.user.js
@@ -16,7 +16,7 @@
 
 // wait 5 seconds to let IB load data
 setTimeout(init(), 5000);
-const ver="1.6.6";
+const ver="1.6.7";
 
 // Define the key name for the cached array
 const PROCESSED_ARRAY_KEY = 'processedArray';
